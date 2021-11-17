@@ -39,8 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'store',
-
+    "django_filters",
+    "ckeditor",
+    "ckeditor_uploader",
+    'store.apps.StoreConfig',
+    'store_api.apps.StoreApiConfig',
+    
 ]
 
 MIDDLEWARE = [
@@ -58,7 +62,7 @@ ROOT_URLCONF = 'dj_store.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,7 +84,7 @@ WSGI_APPLICATION = 'dj_store.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'django_rest_store',
+        'NAME': 'rest_framework',
         "USER": 'yaroslav',
         "PASSWORD": "qwerty",
         "HOST": "127.0.0.1",
@@ -130,7 +134,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
+
+STATIC_DIR = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [STATIC_DIR]
+
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.SessionAuthentication',
+        ),
+        
+}
