@@ -17,8 +17,8 @@ from django.conf import settings
 from django.urls import include, path
 from django.conf.urls.static import static
 from django.contrib import admin
+from .yasg import urlpatterns as dock_urls
 
-from store_api.views import WomanCreateAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,7 +26,13 @@ urlpatterns = [
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api/', include("store_api.urls")),
     path("", include("store.urls")),
+    path("auth/", include("djoser.urls")),
+    path("auth/", include("djoser.urls.authtoken")),
+    path("auth/", include("djoser.urls.jwt")),
+
 ]
+
+urlpatterns += dock_urls
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

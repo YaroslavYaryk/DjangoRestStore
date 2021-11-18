@@ -1,4 +1,11 @@
-from rest_framework.serializers import ModelSerializer, HyperlinkedIdentityField
+from django.contrib.auth.models import User
+from django.db import models
+from rest_framework.fields import SerializerMethodField
+from rest_framework.response import Response
+from rest_framework.serializers import (
+    ModelSerializer, 
+    HyperlinkedIdentityField, 
+    SerializerMethodField)
 from rest_framework import  serializers
 from store.models import Author, LikedComment, Rating, Woman, Category, WomanComment, WomanLike
 from django.utils.html import strip_tags
@@ -7,41 +14,70 @@ from django.utils.html import strip_tags
 class CommentPostSerializer(ModelSerializer):
     """ post comment to news """
 
-    class Meta:
-        model = WomanComment
-        exclude = ("post",)
-
-
-class CommentAllSerializer(ModelSerializer):
-    """ All information about comment
-    in case if we wanna see what we destroy """
-
-    post = serializers.SlugRelatedField(slug_field="title", read_only=True)
 
     class Meta:
         model = WomanComment
         fields = "__all__"
+
+    read_only_fields = [
+        "user",
+        "post"
+    ]
+
 
 
 class CommentLikeViewSerializer(ModelSerializer):
 
     class Meta:
         model = LikedComment
-        exclude = "id", "choice"
+        exclude = "choice", 
+
+
+class CommentAllSerializer(ModelSerializer):
+    """ All information about comment
+    in case if we wanna see what we destroy """
+
+    post = SerializerMethodField()  
+    user = SerializerMethodField()
+
+    class Meta:
+        model = WomanComment
+        fields = ("id",
+                "comment", 
+                "post",
+                "user",
+                "likes_comment"
+        )
+    def get_user(self, instance):
+        return instance.user.username
+        
+    def get_post(self, instance):
+        return instance.post.title
+
+    likes_comment = CommentLikeViewSerializer(many=True)
 
 
 class CommentPosListSerializer(ModelSerializer):
     """ post comment to news """
 
+    post = SerializerMethodField()
+    user = SerializerMethodField()
     class Meta:
         model = WomanComment
         fields = (
             "id",
             "post",
-            "username",
+            "user",
             "comment",
             "likes_comment"
         )
+
+    def get_user(self, instance):
+        return instance.user.username
+        
+    def get_post(self, instance):
+        return instance.post.title
+
     likes_comment = CommentLikeViewSerializer(many=True)
 
 class RatingSerializer(ModelSerializer):
@@ -72,6 +108,21 @@ class CatSerializer(ModelSerializer):
         ]
 
 
+class PostLikeUpdateSerializer(ModelSerializer):
+
+    post = SerializerMethodField()
+    user = SerializerMethodField()
+
+    class Meta:
+        model = WomanLike
+        fields = ("id", "post" ,"user", "rating") 
+
+    def get_user(self, instance):
+        return instance.user.username
+
+    def get_post(self, instance):
+        return instance.post.title
+
 class WomanSerializer(ModelSerializer):
     
     category = HyperlinkedIdentityField(
@@ -82,11 +133,10 @@ class WomanSerializer(ModelSerializer):
         view_name="authors-detail",
         lookup_field = "author_id"
     )
+    
+    image = SerializerMethodField()
     all_comments = CommentPostSerializer(many=True)
-    likes = HyperlinkedIdentityField(
-        view_name="detail-likes",
-        # lookup_field = ""
-    )
+    likes = PostLikeUpdateSerializer(many=True)
 
     class Meta:
         model = Woman
@@ -97,7 +147,15 @@ class WomanSerializer(ModelSerializer):
             "author", 
             "all_comments",
             "likes",
+            "image"
         ]
+
+    def get_image(self, instance):
+        try:
+            image = instance.photo.url
+        except:
+            image = None
+        return image    
         
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -118,11 +176,19 @@ class WomanCreateSerializer(ModelSerializer):
 
 
 class WomanSpecialSerializer(ModelSerializer):
-    
+
+    image = SerializerMethodField()    
+
     class Meta:
         model = Woman
-        fields = ("title", "slug", "content", "cat", "author", "all_comments",  "is_published")    
+        fields = ("title", "slug", "content", "cat", "author", "all_comments", "image", "is_published")    
 
+    def get_image(self, instance):
+        try:
+            image = instance.photo.url
+        except:
+            image = None
+        return image        
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -140,47 +206,68 @@ class WomanSpecialUpdateSerializer(ModelSerializer):
         model = Woman
         fields = ("title", "slug", "content", "cat",  "author",  "is_published")    
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['content'] = strip_tags(instance.content)
+        return data
     
 
 class PostLikeCreateSerializer(ModelSerializer):
 
     class Meta:
         model = WomanLike
-        exclude = ["ip"]    
+        fields = "rating",     
 
 
     def create(self, validated_data):
-        validated_data['ip'] = self.context.get('request').META.get("REMOTE_ADDR")
+
+        post = Woman.objects.get(slug=self.context["request"].path.split("/")[-3]),
+        user = self.context["request"].user,
+        rating = validated_data["rating"]
+
         like = WomanLike.objects.filter(
-            post=validated_data["post"],
-            ip = validated_data["ip"]
+            post=post[0],
+            user = user[0]
         )
+        id_pk = like.first().pk if like else None
         if like:
-           like.delete()
-        return WomanLike.objects.create(**validated_data)
+             
+            like.delete()
+        return WomanLike.objects.create(
+            id = id_pk,
+            post=post[0],
+            user = user[0],
+            rating = rating
+        )
         
 
 class PostLikeListSerializer(ModelSerializer):
 
+    user = SerializerMethodField()
+    post = SerializerMethodField()
     class Meta:
         model = WomanLike
-        exclude = ["ip"]    
-     
+        fields = "__all__"
 
+    def get_user(self, instance):
+        return instance.user.username 
 
-class PostLikeUpdateSerializer(ModelSerializer):
-
-    class Meta:
-        model = WomanLike
-        exclude = ["ip"] 
-
+    def get_post(self, instance):
+        return instance.post.title          
 
 
 class CommentLikeListSerializer(ModelSerializer):
-
+    user = SerializerMethodField()
+    post = serializers.SlugRelatedField(slug_field="title", read_only = True)
     class Meta:
         model = LikedComment
         fields = "__all__"
+
+    def get_user(self, instance):
+        return instance.user.username
+
+    def get_post(self, instance):
+        return instance.post.title    
 
 class CommentLikeCreateSerializer(ModelSerializer):
 
@@ -188,46 +275,58 @@ class CommentLikeCreateSerializer(ModelSerializer):
         model = LikedComment
         fields = [
             "is_liked",
-            "post_comment",
-            "user"
+            # "post_comment",
+            # "user"
         ]
 
     def create(self, validated_data):
 
-        post_comment=validated_data["post_comment"]
-        user = validated_data["user"]
-        is_like = LikedComment.objects.get(
-            post_comment=post_comment,
-            user = user,
+        post_comment = WomanComment.objects.get(pk=int(self.context["request"].path.split("/")[-3])),
+        user = self.context["request"].user,
+
+        is_like = LikedComment.objects.filter(
+            post_comment=post_comment[0],
+            user = user[0],
         )
-        id_pk = is_like.pk
-        if is_like and is_like.is_liked:
+        id_pk = is_like.first().pk if is_like else None
+        if is_like and is_like.first().is_liked:
             is_like.delete()
             return LikedComment.objects.create(
                 id = id_pk,
-                post_comment=post_comment,
-                user = user,
+                post_comment=post_comment[0],
+                user = user[0],
                 is_liked = False
             )
         else:   
             is_like.delete()
             return LikedComment.objects.create(
                 id = id_pk,
-                post_comment=post_comment,
-                user = user,
+                post_comment=post_comment[0],
+                user = user[0],
                 is_liked = True
             )
 
 
 class PostCommentCreateAPIView(ModelSerializer):
 
+
     class Meta:
         model = WomanComment
         fields = [
-            "post",
-            "username",
+            # "post",
+            # "user",
             "comment",
-        ]
+        ]  
+
+    def create(self, validated_data):
+
+        comment = validated_data["comment"]
+
+        return WomanComment.objects.create(
+            post = Woman.objects.get(slug=self.context["request"].path.split("/")[-3]),
+            user = self.context["request"].user,
+            comment = comment
+        )
 
 class AuthoeSerializer(ModelSerializer):
 

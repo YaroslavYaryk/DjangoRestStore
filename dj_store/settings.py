@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    "rest_framework.authtoken",
+    "djoser",
+    'drf_yasg',
     "django_filters",
     "ckeditor",
     "ckeditor_uploader",
@@ -84,7 +87,7 @@ WSGI_APPLICATION = 'dj_store.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'rest_framework',
+        'NAME': 'dj_rest_framework',
         "USER": 'yaroslav',
         "PASSWORD": "qwerty",
         "HOST": "127.0.0.1",
@@ -145,11 +148,34 @@ STATICFILES_DIRS = [STATIC_DIR]
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+# SERVER_EMAIL = 'duhanov2003@gmail.com'
+EMAIL_PORT = 587
+# DEFAULT_FROM_EMAIL = 'duhanov2003@gmail.com'
+EMAIL_HOST_USER = 'duhanov2003@gmail.com'
+EMAIL_HOST_PASSWORD = 'proshnik31'
+EMAIL_USE_TLS = True
+
+
+
+
 CKEDITOR_UPLOAD_PATH = "uploads/"
 
 REST_FRAMEWORK = {
        'DEFAULT_AUTHENTICATION_CLASSES': (
             'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.TokenAuthentication',
+            "rest_framework_simplejwt.authentication.JWTAuthentication"
         ),
-        
+}
+
+DJOSER = {
+    "PASSWORD_RESET_CONFIRM_URL" : '#/password/reset/confirm/{uid}/{token}',
+    "USERNAME_RESET_CONFIRM_URL" : '#/username/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL' : '#/activate/{uid}/{token}',
+    "SEND_ACTIVATION_EMAIL" : True,
+    "SERIALIZERS": {},
 }

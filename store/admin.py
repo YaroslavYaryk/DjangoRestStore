@@ -119,10 +119,10 @@ class RatingAdmin(admin.ModelAdmin):
 
 class WomanCommentAdmin(admin.ModelAdmin):
 
-    list_display = ('id','username', 'comment','get_post_title',"creation_date",)
-    list_display_links = ('id', 'username', "comment", "get_post_title")
-    search_fields = ('username',)
-    fields = ("username", "comment", "post", "creation_date")
+    list_display = ('id','user', 'comment','get_post_title',"creation_date",)
+    list_display_links = ('id', 'user', "comment", "get_post_title")
+    search_fields = ('user',)
+    fields = ("user", "comment", "post", "creation_date")
     readonly_fields = ("creation_date",)
     autocomplete_fields = ['post']
 

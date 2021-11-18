@@ -224,7 +224,8 @@ class WomanComment(models.Model):
     """Model for creating comment part """
     post = models.ForeignKey(
         Woman, related_name="all_comments", on_delete=models.CASCADE)
-    username = models.CharField(max_length=50, name="username")
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE, null=True)
     comment = models.TextField(max_length=200)
     creation_date = models.DateTimeField(auto_now_add=True)
 
@@ -253,12 +254,16 @@ class WomanLike(models.Model):
 
     post = models.ForeignKey(
         Woman, related_name="likes", on_delete=models.CASCADE)
-    ip = models.CharField(max_length=100, null=True)
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE, null=True)
     rating = models.ForeignKey(Rating, related_name="rating_star", on_delete=models.CASCADE, null=True)
 
 
     def __str__(self) -> str:
         return str(self.rating.star)
+
+    def get_id(self):
+        return str(self.id)    
 
 
 class LikedComment(models.Model):
