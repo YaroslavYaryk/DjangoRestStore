@@ -2,8 +2,6 @@ from django.db import models
 
 # Create your models here.
 from django.urls import reverse
-import re
-from django.core.validators import RegexValidator
 from django.utils.text import slugify
 from django.db.models import *
 from django.contrib.auth.models import User
@@ -18,37 +16,39 @@ class WomanFlterShowLenContent(models.Manager):
     """create manager that show len title and content and compare them"""
 
     def get_queryset(self):
-        return Woman.objects.annotate(len_t = Length('title'), len_c = Length("content"))
-        
+        return Woman.objects.annotate(len_t=Length("title"), len_c=Length("content"))
+
 
 class WomanFilterManager(models.Manager):
-
     def get_queryset(self):
         return super().get_queryset().order_by("creation_date")
 
 
 class CountCategory(models.Manager):
-
     def get_queryset(self):
         return super().get_queryset().annotate(cnt=Count("woman"))
 
 
 class CountWiews(models.Manager):
-
     def get_queryset(self):
         return super().get_queryset().annotate(max_view=Max("woman__view"))
 
+
 # Create your models here.
+
 
 class IpModel(models.Model):
 
     """class for getting ip adress of anyone"""
-    post_news = models.ForeignKey("Woman", related_name="ip", on_delete=models.CASCADE, null=True)
+
+    post_news = models.ForeignKey(
+        "Woman", related_name="ip", on_delete=models.CASCADE, null=True
+    )
     ip = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.ip}"
-    
+
 
 class Woman(models.Model):
 
@@ -56,12 +56,13 @@ class Woman(models.Model):
 
     title = models.CharField(max_length=100, unique=True)
 
-    slug = models.SlugField(max_length=255,
-                            unique=True,
-                            db_index=True,
-                            verbose_name="URL",
-                            null=True,
-                            )
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name="URL",
+        null=True,
+    )
 
     content = models.TextField(blank=True)  # is not required to be filled
 
@@ -76,13 +77,15 @@ class Woman(models.Model):
 
     is_published = models.BooleanField(default=True)  # default is True
 
-    cat = models.ForeignKey("Category", on_delete=models.PROTECT,
-                            verbose_name="Category"
-                            )  # add field from another model
+    cat = models.ForeignKey(
+        "Category", on_delete=models.PROTECT, verbose_name="Category"
+    )  # add field from another model
 
-    author = models.ForeignKey("Author", verbose_name="Author", on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        "Author", verbose_name="Author", on_delete=models.CASCADE
+    )
 
-    notes = GenericRelation('Note')
+    notes = GenericRelation("Note")
 
     objects = models.Manager()
 
@@ -95,7 +98,7 @@ class Woman(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
-        return super(Woman, self).save(*args, **kwargs)     
+        return super(Woman, self).save(*args, **kwargs)
 
     def get_slag(self):
         return str(self.title).replace(" ", "_")
@@ -103,10 +106,6 @@ class Woman(models.Model):
     def get_absolute_url(self):
         """to add link to path the same as title is"""
         return reverse("post", kwargs={"slug_id": self.slug})
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
-        super(Woman, self).save(*args, **kwargs)
 
     def get_date(self):
         return f"{self.creation_date.day} : {self.creation_date.month} : {self.creation_date.year}"
@@ -118,20 +117,19 @@ class Woman(models.Model):
         super().delete(*args, **kwargs)
 
     def get_view_count(self):
-        return self.ip.count()    
-    
+        return self.ip.count()
 
     # def get_total_view(self):
-    #     return self.views.count()    
+    #     return self.views.count()
 
     class Meta:
 
         """our model display in django-admin"""
+
         verbose_name = "New"
         verbose_name_plural = "News"
         ordering = ["-creation_date"]  # sorting news at site
         get_latest_by = "creation_date"
-
 
 
 class Category(models.Model):
@@ -139,18 +137,18 @@ class Category(models.Model):
     """creating fields in databace"""
 
     name = models.CharField(max_length=100, db_index=True)
-    slug = models.SlugField(max_length=255,
-                            unique=True,
-                            db_index=True,
-                            verbose_name="URL",
-                            null=True,
-                            )
-    ico = models.ImageField(
-        upload_to="icons/Data%y/%m/%d/", null=True, blank=True)
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name="URL",
+        null=True,
+    )
+    ico = models.ImageField(upload_to="icons/Data%y/%m/%d/", null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
-        return super(Category, self).save(*args, **kwargs)    
+        return super(Category, self).save(*args, **kwargs)
 
     # def __str__(self):
     #     return str(self.name).lower()
@@ -172,36 +170,38 @@ class Category(models.Model):
     class Meta:
 
         """our model display in django-admin"""
+
         verbose_name = "Category"
         verbose_name_plural = "Categories"
         ordering = ["name"]  # sorting categories at site
 
     def __str__(self) -> str:
-        return self.name    
+        return self.name
 
 
 class Author(models.Model):
 
     name = models.CharField(("author_name"), max_length=100)
     age = models.IntegerField(("author_age"))
-    slug = models.SlugField(max_length=255,
-                            unique=True,
-                            db_index=True,
-                            verbose_name="URL",
-                            null=True,
-                            )
+    slug = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        verbose_name="URL",
+        null=True,
+    )
     CHOICES = (
-        ('1', 'Awful'),
-        ('2', 'Low'),
-        ('3', 'Medium'),
-        ('4', 'Good'),
-        ('5', 'Perfect'),
+        ("1", "Awful"),
+        ("2", "Low"),
+        ("3", "Medium"),
+        ("4", "Good"),
+        ("5", "Perfect"),
     )
 
-    rate = models.CharField(("rate"), max_length=250, choices = CHOICES)
+    rate = models.CharField(("rate"), max_length=250, choices=CHOICES)
 
     def __str__(self):
-        return self.name                             
+        return self.name
 
 
 class WomanImage(models.Model):
@@ -214,6 +214,7 @@ class WomanImage(models.Model):
     class Meta:
 
         """our model display in django-admin"""
+
         verbose_name = "Image"
         verbose_name_plural = "Images"
         ordering = ["id"]  # sorting categories at site
@@ -221,21 +222,26 @@ class WomanImage(models.Model):
 
 class WomanComment(models.Model):
 
-    """Model for creating comment part """
+    """Model for creating comment part"""
+
     post = models.ForeignKey(
-        Woman, related_name="all_comments", on_delete=models.CASCADE)
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE, null=True)
+        Woman, related_name="all_comments", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     comment = models.TextField(max_length=200)
     creation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.comment[:30]
 
+    def get_api_url(self):
+        """to add link to path the same as title is"""
+        return reverse("comment-details", args=[str(self.pk)])
 
     class Meta:
 
         """our model display in django-admin"""
+
         verbose_name = "Comment"
         verbose_name_plural = "Comments"
         ordering = ["creation_date"]  # sorting categories at site
@@ -250,34 +256,47 @@ class Rating(models.Model):
 
 
 class WomanLike(models.Model):
-    """ add like to our post """
+    """add like to our post"""
 
-    post = models.ForeignKey(
-        Woman, related_name="likes", on_delete=models.CASCADE)
-    user = models.ForeignKey(User,
-                             on_delete=models.CASCADE, null=True)
-    rating = models.ForeignKey(Rating, related_name="rating_star", on_delete=models.CASCADE, null=True)
-
+    post = models.ForeignKey(Woman, related_name="likes", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    rating = models.ForeignKey(
+        Rating, related_name="rating_star", on_delete=models.CASCADE, null=True
+    )
 
     def __str__(self) -> str:
         return str(self.rating.star)
 
     def get_id(self):
-        return str(self.id)    
+        return str(self.id)
+
+    def get_api_url(self):
+        """to add link to path the same as title is"""
+        return reverse("detail-likes", args=[str(self.pk)])
 
 
 class LikedComment(models.Model):
     """Class container thats gonna consist user that already liked comment"""
 
     post_comment = models.ForeignKey(
-        WomanComment, related_name="likes_comment", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, related_name="likes_comment",
-                             on_delete=models.CASCADE)
+        WomanComment, related_name="likes_comment", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        User, related_name="likes_comment", on_delete=models.CASCADE
+    )
     is_liked = models.BooleanField(default=False, name="is_liked")
     choice = models.CharField(max_length=50, default="No")
 
     def __str__(self):
-        return str(self.post_comment) if len(str(self.post_comment)) < 100 else str(self.post_comment)[:100]
+        return (
+            str(self.post_comment)
+            if len(str(self.post_comment)) < 100
+            else str(self.post_comment)[:100]
+        )
+
+    def get_api_url(self):
+        """to add link to path the same as title is"""
+        return reverse("detail-comment-likes", args=[str(self.pk)])
 
 
 class Note(models.Model):
@@ -287,4 +306,4 @@ class Note(models.Model):
     content = models.TextField()
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey(ct_field='content_type',fk_field= 'object_id')
+    content_object = GenericForeignKey(ct_field="content_type", fk_field="object_id")

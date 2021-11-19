@@ -1,45 +1,66 @@
-from django.db.models import query
-from rest_framework import pagination, status
+from rest_framework import pagination
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import (
-    CreateAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView, RetrieveUpdateAPIView,
-    RetrieveDestroyAPIView)
+    CreateAPIView,
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveDestroyAPIView,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from store_api.pagination import PostPageNumberPagination
 from store.models import Author, LikedComment, Woman, Category, WomanComment, WomanLike
 from .serializers import (
-    AuthoeSerializer, CommentAllSerializer, CommentLikeCreateSerializer, CommentLikeListSerializer, 
-    CommentLikeViewSerializer, CommentPosListSerializer, 
-    CommentPostSerializer, PostCommentCreateAPIView, PostLikeCreateSerializer, PostLikeListSerializer, PostLikeUpdateSerializer, 
-    WomanCreateSerializer, WomanSerializer, CatSerializer,
-     WomanSpecialUpdateSerializer)
-from rest_framework.response import Response
+    AuthoeSerializer,
+    CommentAllSerializer,
+    CommentLikeCreateSerializer,
+    CommentLikeListSerializer,
+    CommentLikeViewSerializer,
+    CommentPosListSerializer,
+    CommentPostSerializer,
+    PostCommentCreateAPIView,
+    PostLikeCreateSerializer,
+    PostLikeListSerializer,
+    PostLikeUpdateSerializer,
+    WomanCreateSerializer,
+    WomanSerializer,
+    CatSerializer,
+    WomanSpecialUpdateSerializer,
+    UserCreateSerializer,
+)
 from rest_framework.permissions import (
-    IsAuthenticated, IsAdminUser,
-    IsAuthenticatedOrReadOnly)
+    IsAuthenticated,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+)
+from django.contrib.auth import get_user_model
+
 from rest_framework.mixins import (
-    DestroyModelMixin, UpdateModelMixin, 
-    RetrieveModelMixin, CreateModelMixin
+    DestroyModelMixin,
+    UpdateModelMixin,
+    RetrieveModelMixin,
+    CreateModelMixin,
 )
 
 
-
-class BaseAPIView():
+class BaseAPIView:
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["title", "content"]
     order_fields = ["title", "content"]
 
 
 class CategoryPostListAPIView(BaseAPIView, ListAPIView):
-    """ A simple ViewSet that for listing or retrieving users."""
+    """A simple ViewSet that for listing or retrieving users."""
 
     queryset = Category.objects.all()
     serializer_class = CatSerializer
     pagination_class = PostPageNumberPagination
 
+
 class CommentPostListAPIView(BaseAPIView, ListAPIView):
-    """ A simple ViewSet that for listing or retrieving users."""
+    """A simple ViewSet that for listing or retrieving users."""
 
     queryset = WomanComment.objects.all()
     serializer_class = CommentPosListSerializer
@@ -47,32 +68,32 @@ class CommentPostListAPIView(BaseAPIView, ListAPIView):
 
 
 class PostListAPIViews(BaseAPIView, ListAPIView):
-    """ get all posts """
-    
+    """get all posts"""
+
     queryset = Woman.objects.filter(is_published=True)
     serializer_class = WomanSerializer
     pagination_class = PostPageNumberPagination
 
+
 class CategoryViews(BaseAPIView, ListAPIView):
-    """ get all categories """  
+    """get all categories"""
 
     queryset = Category.objects.all()
     serializer_class = CatSerializer
 
-    
 
 class CategorySpecialViews(APIView):
-    """ get special category by cat id """
+    """get special category by cat id"""
 
     def get(self, request, cat_id):
 
-        catrgory = Category.objects.get(pk = cat_id)
+        catrgory = Category.objects.get(pk=cat_id)
         serializer = CatSerializer(catrgory)
-        return Response(serializer.data)        
+        return Response(serializer.data)
 
 
 class WomanSpecialViews(RetrieveAPIView):
-    """ get special category by cat id """
+    """get special category by cat id"""
 
     queryset = Woman.objects.all()
     serializer_class = WomanSerializer
@@ -83,10 +104,10 @@ class WomanSpecialViews(RetrieveAPIView):
 
     #     post = Woman.objects.get(pk = post_id)
     #     serializer = WomanSpecialSerializer(post)
-    #     return Response(serializer.data)                
+    #     return Response(serializer.data)
 
 
-class WomanEditAPIView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
+class WomanEditAPIView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
     queryset = Woman.objects.all()
     serializer_class = WomanSpecialUpdateSerializer
     lookup_field = "slug"
@@ -96,7 +117,7 @@ class WomanEditAPIView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)    
+        return self.destroy(request, *args, **kwargs)
 
 
 class WomanDeleteAPIView(RetrieveDestroyAPIView):
@@ -105,51 +126,20 @@ class WomanDeleteAPIView(RetrieveDestroyAPIView):
     lookup_field = "slug"
     permission_classes = [IsAdminUser]
 
+
 class WomanCreateAPIView(ListCreateAPIView):
     queryset = Woman.objects.all()
     serializer_class = WomanCreateSerializer
     permission_classes = [IsAuthenticated]
 
+
 class WomanLeaveComment(CreateAPIView):
-    """ leave comment """
+    """leave comment"""
 
     queryset = WomanComment.objects.all()
     serializer_class = PostCommentCreateAPIView
     lookup_url_kwarg = "post_slug"
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-    
-
-    # def get(self, request, post_slug):
-
-    #     post = WomanComment.objects.filter(post__slug = post_slug, user = self.request.user).first()
-    #     serializer = PostCommentCreateAPIView(post)
-    #     return Response(serializer.data)  
-
-    # def put(self, request, post_slug):
-    #     data = request.data
-    #     print("sda")
-    #     print(data)
-    #     post = self.kwargs["post_slug"]
-    #     user = self.request.user
-    #     comment = data['comment']
-    #     comment = WomanComment.objects.create(post = post, user = user, comment = comment)
-    #     serializer = PostCommentCreateAPIView(comment,context=  {'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         print("YES")
-    #         return Response(serializer.data,  status=status.HTTP_201_CREATED)
-    #     print("NO   ")
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-    # def post(self, request):
-    #     comment = CommentPostSerializer(data=request.data)   
-    #     if comment.is_valid():
-    #         comment.save()
-    #         return Response(status=201)
-    #     return Response(status=500)        
 
 
 class WomanLeaveCommentUpdate(RetrieveUpdateAPIView):
@@ -166,15 +156,15 @@ class WomanDeleteCommentView(RetrieveDestroyAPIView):
 
 
 class PostCommentsAPIView(RetrieveAPIView):
-    """ all comments by a ppost """
+    """all comments by a ppost"""
 
     queryset = WomanComment.objects.all()
     serializer_class = CommentAllSerializer
-    lookup_url_kwarg = "comment_id"
-    permission_classes = [IsAdminUser]
-    
+    permission_classes = [IsAuthenticated]
+
+
 class WomanPutLikeCreateView(CreateAPIView):
-    """ create like to post """
+    """create like to post"""
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeCreateSerializer
@@ -183,7 +173,7 @@ class WomanPutLikeCreateView(CreateAPIView):
 
 
 class UserLikesListAPIView(BaseAPIView, ListAPIView):
-    """ all user likes """
+    """all user likes"""
 
     # queryset = LikedComment.objects.all()
     serializer_class = CommentLikeListSerializer
@@ -191,10 +181,11 @@ class UserLikesListAPIView(BaseAPIView, ListAPIView):
 
     def get_queryset(self):
 
-        return LikedComment.objects.filter(user = self.request.user) 
+        return LikedComment.objects.filter(user=self.request.user)
 
-class WomanEditLikeUpdateView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
-    """ update post like """
+
+class WomanEditLikeUpdateView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
+    """update post like"""
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeUpdateSerializer
@@ -204,10 +195,11 @@ class WomanEditLikeUpdateView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIVie
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs) 
+        return self.destroy(request, *args, **kwargs)
+
 
 class WomanPutLikeListView(ListAPIView):
-    """ how all post like """
+    """how all post like"""
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeListSerializer
@@ -215,72 +207,78 @@ class WomanPutLikeListView(ListAPIView):
 
 
 class WomanPutLikeListView(ListAPIView):
-    """ how all post like """
+    """how all post like"""
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeListSerializer
 
 
 class WomanPutLikeDetailListView(RetrieveAPIView):
-    """ how all post like """
+    """how all post like"""
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeListSerializer
 
 
 class CommentLikeAPIView(BaseAPIView, ListCreateAPIView):
-    """ put like to comment """
+    """put like to comment"""
 
     queryset = LikedComment.objects.all()
     serializer_class = CommentLikeCreateSerializer
     pagination_class = PostPageNumberPagination
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+
 class LikeCommentAPIView(BaseAPIView, ListAPIView):
-    """ put like to comment """
+    """put like to comment"""
 
     queryset = LikedComment.objects.all()
     serializer_class = CommentLikeViewSerializer
 
 
 class AuthorListAPIView(ListAPIView):
-    """ all authors """
+    """all authors"""
 
-    queryset = Author.objects.all() 
+    queryset = Author.objects.all()
     serializer_class = AuthoeSerializer
     pagination_class = pagination.LimitOffsetPagination
 
 
 class AuthorDetailAPIView(RetrieveAPIView):
-    """ detail authors """
+    """detail authors"""
 
-    queryset = Author.objects.all() 
+    queryset = Author.objects.all()
     serializer_class = AuthoeSerializer
     lookup_url_kwarg = "author_id"
 
 
+class LikeCommentOnlyDetailAPIView(RetrieveAPIView):
+    """like detailed for like_comment/<pk>"""
+
+    queryset = LikedComment.objects.all()
+    serializer_class = CommentLikeListSerializer
+
+
 class LikeCommentDetailAPIView(RetrieveAPIView):
-    """ like detailed """
+    """like detailed"""
 
     queryset = LikedComment.objects.all()
     serializer_class = CommentLikeListSerializer
     lookup_url_kwarg = "like_id"
 
 
-class LikeCommentEditAPIView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
-    """ comment like edit """
+class LikeCommentEditAPIView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
+    """comment like edit"""
 
     queryset = LikedComment.objects.all()
     serializer_class = CommentLikeListSerializer
     lookup_url_kwarg = "like_id"
 
 
+class WomanEditCommentView(DestroyModelMixin, UpdateModelMixin, RetrieveAPIView):
+    """edit comment"""
 
-
-class WomanEditCommentView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
-    """ edit comment """
-    
-    queryset = WomanComment.objects.filter(id__gt = 0)
+    queryset = WomanComment.objects.filter(id__gt=0)
     serializer_class = CommentPostSerializer
     lookup_url_kwarg = "comment_id"
     permission_classes = [IsAdminUser]
@@ -289,4 +287,14 @@ class WomanEditCommentView(DestroyModelMixin, UpdateModelMixin,RetrieveAPIView):
         return self.update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)    
+        return self.destroy(request, *args, **kwargs)
+
+
+User = get_user_model()
+
+
+class UserCreateView(CreateAPIView):
+    """User create view"""
+
+    queryset = User.objects.all()
+    serializer_class = UserCreateSerializer
