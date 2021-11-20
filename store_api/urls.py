@@ -1,27 +1,25 @@
 from django.urls import path
+
+from comments.views import (
+    PostCommentsAPIView,
+    WomanLeaveComment,
+    LikeCommentOnlyDetailAPIView,
+)
+
 from .views import (
     AuthorDetailAPIView,
     AuthorListAPIView,
     CategorySpecialViews,
     CategoryViews,
-    CommentLikeAPIView,
-    CommentPostListAPIView,
-    LikeCommentAPIView,
-    LikeCommentDetailAPIView,
-    PostCommentsAPIView,
     PostListAPIViews,
     UserLikesListAPIView,
     WomanCreateAPIView,
     WomanEditAPIView,
-    WomanEditCommentView,
     WomanEditLikeUpdateView,
-    WomanLeaveComment,
     WomanPutLikeCreateView,
     WomanPutLikeDetailListView,
     WomanPutLikeListView,
     WomanSpecialViews,
-    LikeCommentOnlyDetailAPIView,
-    UserCreateView,
 )
 
 
@@ -53,23 +51,6 @@ urlpatterns = [
         name="list-category-special",
     ),
     path("create_post/", WomanCreateAPIView.as_view(), name="create-view"),
-    path(
-        "comments/<int:comment_id>/edit/",
-        WomanEditCommentView.as_view(),
-        name="edit-comment",
-    ),
-    path("comments/", CommentPostListAPIView.as_view(), name="comment"),
-    path(
-        "comments/<pk>/",
-        PostCommentsAPIView.as_view(),name="comment-details",
-    ),
-    path("comments/<pk>/likes/", LikeCommentAPIView.as_view(), name="comment-likes"),
-    path(
-        "comments/<pk>/likes/<int:like_id>/",
-        LikeCommentDetailAPIView.as_view(),
-        name="detail-like",
-    ),
-    path("comments/<pk>/add_like/", CommentLikeAPIView.as_view(), name="like-comment"),
     path("post_likes/", WomanPutLikeListView.as_view(), name="posts-likes"),
     path("post_likes/<pk>/", WomanPutLikeDetailListView.as_view(), name="detail-likes"),
     path(
@@ -83,5 +64,4 @@ urlpatterns = [
     path(
         "authors/<int:author_id>/", AuthorDetailAPIView.as_view(), name="authors-detail"
     ),
-    path("register/", UserCreateView.as_view(), name="user_register"),
 ]

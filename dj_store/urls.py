@@ -21,18 +21,23 @@ from .yasg import urlpatterns as dock_urls
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('api/', include("store_api.urls")),
+    path("admin/", admin.site.urls),
+    path("api-auth/", include("rest_framework.urls")),
+    path("ckeditor/", include("ckeditor_uploader.urls")),
+    path("api/", include("store_api.urls")),
+    path("api/accounts/", include("accounts.urls")),
+    path("api/comments/", include("comments.urls")),
     path("", include("store.urls")),
     path("auth/", include("djoser.urls")),
     path("auth/", include("djoser.urls.authtoken")),
     path("auth/", include("djoser.urls.jwt")),
-
+    path("api/rest-auth/", include("rest_auth.urls")),
+    path(
+        "api/rest-auth/registration/", include("rest_auth.registration.urls")
+    ),
 ]
 
 urlpatterns += dock_urls
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
