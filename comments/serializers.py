@@ -152,7 +152,7 @@ class CommentLikeListSerializer(ModelSerializer):
 
     class Meta:
         model = LikedComment
-        fields = "post_comment", "user", "choice", "get_api_url"
+        fields = "post_comment", "user", "is_liked", "get_api_url"
 
     # def get_user(self, instance):
     #     return instance.user.username

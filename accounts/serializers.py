@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django import forms
 from rest_framework.serializers import CharField
 from django.db.models import Q
-
+from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
@@ -12,6 +12,7 @@ User = get_user_model()
 class UserCreateSerializer(ModelSerializer):
 
     password2 = serializers.CharField(label="Confirm password")
+    token = CharField(allow_blank=True, read_only=True)
 
     class Meta:
         model = User
@@ -22,9 +23,13 @@ class UserCreateSerializer(ModelSerializer):
             "password",
             "password2",
             "email",
+            "token",
         )
 
-        extra_kwargs = {"password": {"write_only": True}}
+        extra_kwargs = {
+            "password": {"write_only": True},
+            "password2": {"write_only": True},
+        }
 
     def create(self, validated_data):
 
@@ -37,9 +42,10 @@ class UserCreateSerializer(ModelSerializer):
         user_obj = User(
             first_name=first_name, last_name=last_name, username=username, email=email
         )
-
         user_obj.set_password(password)
         user_obj.save()
+        token = Token.objects.create(user=user_obj)
+        validated_data["token"] = token
         return validated_data
 
     def validate_password(self, value):
@@ -95,7 +101,8 @@ class UserLoginSerializer(ModelSerializer):
         if not user_obj.check_password(password):
             raise forms.ValidationError("Password id incorrect")
 
-        data["token"] = "SOME_RANDOM_TOCKEN"
+        token = Token.objects.get(user=user_obj)
+        data["token"] = token
 
         return data
 

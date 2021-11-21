@@ -34,13 +34,14 @@ from rest_framework.mixins import (
     # CreateModelMixin,
 )
 
-# Create your views here.
+
 class CommentPostListAPIView(BaseAPIView, ListAPIView):
     """A simple ViewSet that for listing or retrieving users."""
 
     queryset = WomanComment.objects.all()
     serializer_class = CommentPosListSerializer
     lookup_field = "slug"
+    permission_classes = [IsAuthenticated]
 
 
 class WomanLeaveComment(CreateAPIView):
@@ -61,7 +62,7 @@ class WomanLeaveCommentUpdate(RetrieveUpdateAPIView):
 class WomanDeleteCommentView(RetrieveDestroyAPIView):
     queryset = WomanComment.objects.all()
     serializer_class = CommentPostSerializer
-    # lookup_field = "comment_id"
+    permission_classes = [IsAuthenticated]
     lookup_url_kwarg = "comment_id"
 
 

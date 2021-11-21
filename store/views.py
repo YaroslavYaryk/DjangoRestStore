@@ -1,15 +1,16 @@
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView
 from store.utils import DataMixin
 from store.models import Woman
-from django.db.models import Q
+
 # Create your views here.
+
 
 class Home_page(DataMixin, ListView):
 
     """class for depicting all news, start page"""
 
     model = Woman
-    template_name = 'store/home.html'
+    template_name = "store/home.html"
     context_object_name = "posts"
 
     # to add some list to our page
@@ -22,9 +23,7 @@ class Home_page(DataMixin, ListView):
         )
         return dict(list(context.items()) + list(c_def.items()))
 
-
     def get_queryset(self):
 
         return Woman.objects.filter(is_published=True)
         # to find only those element we need
-

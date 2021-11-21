@@ -6,11 +6,11 @@ from rest_framework.serializers import (
 from rest_framework import serializers
 from store.models import (
     Author,
-    LikedComment,
+    # LikedComment,
     Rating,
     Woman,
     Category,
-    WomanComment,
+    # WomanComment,
     WomanLike,
 )
 from comments.serializers import CommentPostSerializer
@@ -70,12 +70,8 @@ class PostLikeDetaliSerializer(ModelSerializer):
 
 class WomanSerializer(ModelSerializer):
 
-    category = HyperlinkedIdentityField(
-        view_name="list-category-special", lookup_field="cat_id"
-    )
-    author = HyperlinkedIdentityField(
-        view_name="authors-detail", lookup_field="author_id"
-    )
+    category = SerializerMethodField()
+    author = SerializerMethodField()
 
     image = SerializerMethodField()
     all_comments = CommentPostSerializer(many=True)
@@ -99,6 +95,12 @@ class WomanSerializer(ModelSerializer):
         except Exception:
             image = None
         return image
+
+    def get_category(self, instance):
+        return instance.cat.name
+
+    def get_author(self, instance):
+        return instance.author.name    
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

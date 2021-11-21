@@ -7,10 +7,7 @@ from comments.views import (
 )
 
 from .views import (
-    AuthorDetailAPIView,
-    AuthorListAPIView,
-    CategorySpecialViews,
-    CategoryViews,
+
     PostListAPIViews,
     UserLikesListAPIView,
     WomanCreateAPIView,
@@ -44,12 +41,7 @@ urlpatterns = [
         PostCommentsAPIView.as_view(),
         name="post-comments",
     ),
-    path("category/", CategoryViews.as_view(), name="list-category"),
-    path(
-        "category/<int:cat_id>",
-        CategorySpecialViews.as_view(),
-        name="list-category-special",
-    ),
+    # path("", CategoryViewSet.as_view(), name="list-category"),
     path("create_post/", WomanCreateAPIView.as_view(), name="create-view"),
     path("post_likes/", WomanPutLikeListView.as_view(), name="posts-likes"),
     path("post_likes/<pk>/", WomanPutLikeDetailListView.as_view(), name="detail-likes"),
@@ -60,8 +52,5 @@ urlpatterns = [
     ),
     path("post_likes/<pk>/edit/", WomanEditLikeUpdateView.as_view(), name="edit-likes"),
     path("user_likes/", UserLikesListAPIView.as_view(), name="user-comment-likes"),
-    path("authors/", AuthorListAPIView.as_view(), name="authors-list"),
-    path(
-        "authors/<int:author_id>/", AuthorDetailAPIView.as_view(), name="authors-detail"
-    ),
+
 ]
