@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,12 +41,12 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_swagger",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "rest_auth",
     "rest_auth.registration",
-    "djoser",
     "drf_yasg",
     "django_filters",
     "ckeditor",
@@ -170,8 +171,8 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        # "rest_framework.authentication.SessionAuthentication",
-        # "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
         "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
     ),
     "DEFAULT_RENDERER_CLASSES": [
@@ -179,5 +180,10 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
 }
 
+SWAGGER_SETTINGS = {
+    "LOGIN_URL": "rest_framework:login",
+    "LOGOUT_URL": "rest_framework:logout",
+}

@@ -6,6 +6,8 @@ from rest_framework.generics import (
     RetrieveUpdateAPIView,
     RetrieveDestroyAPIView,
 )
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from store.models import WomanComment
 from .serializers import (
     CommentPosListSerializer,
@@ -71,7 +73,16 @@ class PostCommentsAPIView(RetrieveAPIView):
 
     queryset = WomanComment.objects.all()
     serializer_class = CommentAllSerializer
-    permission_classes = [IsAuthenticated]
+
+
+class PostAllCommentsAPIView(APIView):
+    """all comments by a ppost"""
+
+    def get(self, request, post_slug):
+
+        queryset = WomanComment.objects.filter(post__slug=post_slug)
+        serializer = CommentAllSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 class CommentLikeAPIView(BaseAPIView, ListCreateAPIView):

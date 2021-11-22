@@ -1,13 +1,12 @@
 from django.urls import path
 
 from comments.views import (
-    PostCommentsAPIView,
     WomanLeaveComment,
     LikeCommentOnlyDetailAPIView,
+    PostAllCommentsAPIView,
 )
 
 from .views import (
-
     PostListAPIViews,
     UserLikesListAPIView,
     WomanCreateAPIView,
@@ -38,7 +37,7 @@ urlpatterns = [
     path("posts/<slug>/edit/", WomanEditAPIView.as_view(), name="update-view"),
     path(
         "posts/<slug:post_slug>/comments/",
-        PostCommentsAPIView.as_view(),
+        PostAllCommentsAPIView.as_view(),
         name="post-comments",
     ),
     # path("", CategoryViewSet.as_view(), name="list-category"),
@@ -52,5 +51,4 @@ urlpatterns = [
     ),
     path("post_likes/<pk>/edit/", WomanEditLikeUpdateView.as_view(), name="edit-likes"),
     path("user_likes/", UserLikesListAPIView.as_view(), name="user-comment-likes"),
-
 ]
