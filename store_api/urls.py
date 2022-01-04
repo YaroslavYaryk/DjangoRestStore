@@ -16,6 +16,7 @@ from .views import (
     WomanPutLikeDetailListView,
     WomanPutLikeListView,
     WomanSpecialViews,
+    CreatePostView
 )
 
 
@@ -51,4 +52,8 @@ urlpatterns = [
     ),
     path("post_likes/<pk>/edit/", WomanEditLikeUpdateView.as_view(), name="edit-likes"),
     path("user_likes/", UserLikesListAPIView.as_view(), name="user-comment-likes"),
+    path("post_create/", CreatePostView.as_view(), name="create_post"),
+    path("post_update/<pk>", CreatePostView.as_view(), name="update_post"),
+    path("post_delete/<pk>", CreatePostView.as_view(), name="delete_post"),
+
 ]

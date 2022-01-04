@@ -8,6 +8,8 @@ from rest_framework.generics import (
     # RetrieveUpdateAPIView,
     RetrieveDestroyAPIView,
 )
+from rest_framework import status
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -30,6 +32,7 @@ from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
+    AllowAny
 )
 from .pormissions import IsOwnerOrReadOnly
 from rest_framework.mixins import (
@@ -38,6 +41,7 @@ from rest_framework.mixins import (
     # RetrieveModelMixin,
     # CreateModelMixin,
 )
+
 
 
 class CategoryViewSet(viewsets.ViewSet):
@@ -98,7 +102,8 @@ class PostListAPIViews(BaseAPIView, ListAPIView):
 
     queryset = Woman.objects.filter(is_published=True)
     serializer_class = WomanSerializer
-    pagination_class = PostPageNumberPagination
+    permission_classes = [IsAuthenticated]
+    # pagination_class = PostPageNumberPagination
 
 
 # class CategoryViews(BaseAPIView, ListAPIView):
@@ -160,6 +165,35 @@ class WomanCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
+class CreatePostView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = WomanCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        post = Woman.objects.get(pk=pk)
+        serializer = WomanCreateSerializer(instance=post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        queryset = Woman.objects.all()
+        serializer = WomanCreateSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def delete(self, requset, pk):
+        post = Woman.objects.get(pk=pk)
+        post.delete()
+        return Response({"message": "Item was succesfully deleted"})
+
+
 class WomanPutLikeCreateView(CreateAPIView):
     """create like to post"""
 
@@ -177,7 +211,6 @@ class UserLikesListAPIView(BaseAPIView, ListAPIView):
     pagination_class = PostPageNumberPagination
 
     def get_queryset(self):
-
         return LikedComment.objects.filter(user=self.request.user)
 
 
@@ -215,7 +248,6 @@ class WomanPutLikeDetailListView(RetrieveAPIView):
 
     queryset = WomanLike.objects.all()
     serializer_class = PostLikeListSerializer
-
 
 # class AuthorListAPIView(ListAPIView):
 #     """all authors"""

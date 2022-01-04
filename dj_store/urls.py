@@ -5,17 +5,19 @@ from django.contrib import admin
 from .yasg import urlpatterns as dock_urls
 from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework.routers import DefaultRouter
-from store_api.views import CategoryViewSet, AuthorViewSet
-# from rest_framework.schemas import get_schema_view
+import store_api.views as st_wiews
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from rest_framework.documentation import include_docs_urls
 from rest_framework_swagger.views import get_swagger_view
 
-
 router = DefaultRouter()
-router.register("", CategoryViewSet)
+router.register("", st_wiews.CategoryViewSet)
 
 router2 = DefaultRouter()
-router2.register("", AuthorViewSet)
+router2.register("", st_wiews.AuthorViewSet)
 
 API_TITLE = "Blog API"  # new
 API_DESCRIPTION = "A Web API for creating and editing blog posts."  # new
@@ -42,13 +44,14 @@ urlpatterns = [
     # path("api/schema/", schema_view),
     path("api/docs/", include_docs_urls(title=API_TITLE, description=API_DESCRIPTION)),
     path('swagger/', schema_view),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 urlpatterns += dock_urls
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
 """
 

@@ -58,6 +58,10 @@ class PostLikeUpdateSerializer(ModelSerializer):
     def get_post(self, instance):
         return instance.post.title
 
+class AuthoeSerializer(ModelSerializer):
+    class Meta:
+        model = Author
+        exclude = ("slug",)
 
 class PostLikeDetaliSerializer(ModelSerializer):
 
@@ -70,8 +74,8 @@ class PostLikeDetaliSerializer(ModelSerializer):
 
 class WomanSerializer(ModelSerializer):
 
-    category = SerializerMethodField()
-    author = SerializerMethodField()
+    cat = CatSerializer(read_only=True)
+    author = AuthoeSerializer(read_only=True)
 
     image = SerializerMethodField()
     all_comments = CommentPostSerializer(many=True)
@@ -82,7 +86,7 @@ class WomanSerializer(ModelSerializer):
         fields = [
             "title",
             "content",
-            "category",
+            "cat",
             "author",
             "all_comments",
             "likes",
@@ -96,11 +100,7 @@ class WomanSerializer(ModelSerializer):
             image = None
         return image
 
-    def get_category(self, instance):
-        return instance.cat.name
 
-    def get_author(self, instance):
-        return instance.author.name    
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -109,9 +109,12 @@ class WomanSerializer(ModelSerializer):
 
 
 class WomanCreateSerializer(ModelSerializer):
+
     class Meta:
         model = Woman
         fields = ["title", "content", "cat", "author"]
+
+
 
 
 class WomanSpecialSerializer(ModelSerializer):
@@ -200,7 +203,4 @@ class PostLikeListSerializer(ModelSerializer):
         return instance.get_api_url()
 
 
-class AuthoeSerializer(ModelSerializer):
-    class Meta:
-        model = Author
-        exclude = ("slug",)
+
